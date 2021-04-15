@@ -1,7 +1,7 @@
 # SANITY CHECK
-if( "ilp64" IN_LIST BLIS_FIND_COMPONENTS AND "lp64" IN_LIST BLIS_FIND_COMPONENTS )
-  message( FATAL_ERROR "BLIS cannot link to both ILP64 and LP64 iterfaces" )
-endif()
+# if( "ilp64" IN_LIST BLIS_FIND_COMPONENTS AND "lp64" IN_LIST BLIS_FIND_COMPONENTS )
+#   message( FATAL_ERROR "BLIS cannot link to both ILP64 and LP64 iterfaces" )
+# endif()
 
 if( BLIS_PREFERS_STATIC )
   set( BLIS_LIBRARY_NAME "libblis.a" )
@@ -13,7 +13,7 @@ find_library( BLIS_LIBRARIES
   NAMES ${BLIS_LIBRARY_NAME}
   HINTS ${BLIS_PREFIX}
   PATHS ${BLIS_LIBRARY_DIR} ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES} 
-  PATH_SUFFIXES lib lib64 lib32
+  PATH_SUFFIXES lib
   DOC "BLIS Library"
 )
 
@@ -31,34 +31,34 @@ find_path( BLIS_INCLUDE_DIR
 #  set( BLIS_LIBRARIES ${BLIS_LIBRARY} Threads::Threads "m")
 #endif()
 
-# check ILP64
-if( BLIS_INCLUDE_DIR )
+# # check ILP64
+# if( BLIS_INCLUDE_DIR )
 
-  try_run( BLIS_USES_LP64
-           _blis_idx_test_compile_result
-           ${CMAKE_CURRENT_BINARY_DIR}
-    SOURCES ${CMAKE_CURRENT_LIST_DIR}/util/blis_int_size.c
-    CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${BLIS_INCLUDE_DIR}
-    COMPILE_OUTPUT_VARIABLE _blis_idx_compile_output
-    RUN_OUTPUT_VARIABLE     _blis_idx_run_output
-  )
+#   try_run( BLIS_USES_LP64
+#            _blis_idx_test_compile_result
+#            ${CMAKE_CURRENT_BINARY_DIR}
+#     SOURCES ${CMAKE_CURRENT_LIST_DIR}/util/blis_int_size.c
+#     CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${BLIS_INCLUDE_DIR}
+#     COMPILE_OUTPUT_VARIABLE _blis_idx_compile_output
+#     RUN_OUTPUT_VARIABLE     _blis_idx_run_output
+#   )
 
-  if( ${BLIS_USES_LP64} EQUAL 0 )
-    set( BLIS_USES_LP64 TRUE )
-  else()
-    set( BLIS_USES_LP64 FALSE )
-  endif()
+#   if( ${BLIS_USES_LP64} EQUAL 0 )
+#     set( BLIS_USES_LP64 TRUE )
+#   else()
+#     set( BLIS_USES_LP64 FALSE )
+#   endif()
 
-  ## Handle components
-  if( BLIS_USES_LP64 )
-    set( BLIS_ilp64_FOUND FALSE )
-    set( BLIS_lp64_FOUND  TRUE  )
-  else()
-    set( BLIS_ilp64_FOUND TRUE  )
-    set( BLIS_lp64_FOUND  FALSE )
-  endif()
+#   ## Handle components
+#   if( BLIS_USES_LP64 )
+#     set( BLIS_ilp64_FOUND FALSE )
+#     set( BLIS_lp64_FOUND  TRUE  )
+#   else()
+#     set( BLIS_ilp64_FOUND TRUE  )
+#     set( BLIS_lp64_FOUND  FALSE )
+#   endif()
 
-endif()
+# endif()
 
 
 include(FindPackageHandleStandardArgs)
