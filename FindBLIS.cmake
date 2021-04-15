@@ -25,40 +25,62 @@ find_path( BLIS_INCLUDE_DIR
   DOC "BLIS header"
 )
   
-#if( BLIS_LIBRARY AND BLIS_PREFERS_STATIC )
-#  include( CMakeFindDependency )
-#  find_package( Threads QUIET )
-#  set( BLIS_LIBRARIES ${BLIS_LIBRARY} Threads::Threads "m")
-#endif()
+if( BLIS_LIBRARY AND BLIS_PREFERS_STATIC )
+ include( CMakeFindDependency )
+ find_package( Threads QUIET )
+ set( BLIS_LIBRARIES ${BLIS_LIBRARY} Threads::Threads "m")
+endif()
 
-# # check ILP64
-# if( BLIS_INCLUDE_DIR )
+# check ILP64
+if( BLIS_INCLUDE_DIR )
 
-#   try_run( BLIS_USES_LP64
-#            _blis_idx_test_compile_result
-#            ${CMAKE_CURRENT_BINARY_DIR}
-#     SOURCES ${CMAKE_CURRENT_LIST_DIR}/util/blis_int_size.c
-#     CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${BLIS_INCLUDE_DIR}
-#     COMPILE_OUTPUT_VARIABLE _blis_idx_compile_output
-#     RUN_OUTPUT_VARIABLE     _blis_idx_run_output
-#   )
+  try_run( BLIS_USES_LP64
+  BLIS_TEST_COMPILES
+  ${CMAKE_CURRENT_BINARY_DIR}
+  SOURCES ${CMAKE_CURRENT_LIST_DIR}/util/blis_int_size.c
+  CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${BLIS_INCLUDE_DIR}
+  LINK_LIBRARIES ${BLIS_LIBRARIES}
+  COMPILE_OUTPUT_VARIABLE _blis_idx_compile_output
+  RUN_OUTPUT_VARIABLE     _blis_idx_run_output
+  )
 
-#   if( ${BLIS_USES_LP64} EQUAL 0 )
-#     set( BLIS_USES_LP64 TRUE )
-#   else()
-#     set( BLIS_USES_LP64 FALSE )
-#   endif()
+if( NOT BLIS_TEST_COMPILES )
+if( ${_blis_idx_compile_output} MATCHES "pthread_" )
+find_dependency( Threads )
+list( APPEND BLIS_LIBRARIES Threads::Threads )
+endif()
+if( ${_blis_idx_compile_output} MATCHES "omp_" )
+find_dependency( OpenMP )
+list( APPEND BLIS_LIBRARIES OpenMP::OpenMP_C )
+endif()
+endif()
 
-#   ## Handle components
-#   if( BLIS_USES_LP64 )
-#     set( BLIS_ilp64_FOUND FALSE )
-#     set( BLIS_lp64_FOUND  TRUE  )
-#   else()
-#     set( BLIS_ilp64_FOUND TRUE  )
-#     set( BLIS_lp64_FOUND  FALSE )
-#   endif()
+  try_run( BLIS_USES_LP64
+           BLIS_TEST_COMPILES
+           ${CMAKE_CURRENT_BINARY_DIR}
+    SOURCES ${CMAKE_CURRENT_LIST_DIR}/util/blis_int_size.c
+    CMAKE_FLAGS -DINCLUDE_DIRECTORIES:STRING=${BLIS_INCLUDE_DIR}
+    LINK_LIBRARIES ${BLIS_LIBRARIES}
+    COMPILE_OUTPUT_VARIABLE _blis_idx_compile_output
+    RUN_OUTPUT_VARIABLE     _blis_idx_run_output
+  )
 
-# endif()
+  if( ${BLIS_USES_LP64} EQUAL 0 )
+    set( BLIS_USES_LP64 TRUE )
+  else()
+    set( BLIS_USES_LP64 FALSE )
+  endif()
+
+  ## Handle components
+  if( BLIS_USES_LP64 )
+    set( BLIS_ilp64_FOUND FALSE )
+    set( BLIS_lp64_FOUND  TRUE  )
+  else()
+    set( BLIS_ilp64_FOUND TRUE  )
+    set( BLIS_lp64_FOUND  FALSE )
+  endif()
+
+endif()
 
 
 include(FindPackageHandleStandardArgs)
